@@ -1,45 +1,37 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const Home = (props) => {
   const canvasRef = useRef(null)
+  const maxRadius = 35
 
-  const draw = (ctx) => {
-    //                Rectangle
-    //           position     size
-    //            x    y  width height
-    ctx.fillStyle = '#533483'
-    ctx.fillRect(100, 100, 100, 100)
-    ctx.fillStyle = '#E94560'
-    ctx.fillRect(400, 100, 100, 100)
-    ctx.fillStyle = '#16213E'
-    ctx.fillRect(300, 300, 100, 100)
+  function Circle (x, y, dx, dy, radius, ctx) {
+    this.x = x
+    this.y = y
+    this.dx = dx
+    this.dy = dy
+    this.radius = radius
 
-    // Line
-    ctx.beginPath()
-    // starting line point
-    ctx.moveTo(50, 300)
-    // end point of the line
-    ctx.strokeStyle = '#533483'
-    ctx.lineTo(300, 100) //
-    ctx.lineTo(300, 300) // these three points form a triangle
-    ctx.lineTo(50, 300) //
-    ctx.stroke()
-
-    /* Arc / circle
-    ctx.beginPath()
-    ctx.arc(300, 300, 50, 2 * Math.PI, false)
-    ctx.stroke()
-    */
-
-    // some circles
-    for (let i = 0; i < 50; i++) {
-      const positionX = Math.random() * innerWidth
-      const positionY = Math.random() * innerHeight
-
+    this.draw = function () {
       ctx.beginPath()
       ctx.strokeStyle = '#7FB77E'
-      ctx.arc(positionX, positionY, Math.random() * 50, 2 * Math.PI, false)
+      ctx.arc(x, y, radius, 2 * Math.PI, false)
+      ctx.strokeStyle = 'blue'
       ctx.stroke()
+      ctx.fill()
+    }
+
+    this.update = function () {
+      if (x + radius > innerWidth || x - 50 < 0) {
+        dx = -dx
+      }
+      if (y + 50 > innerHeight || y - 50 < 0) {
+        dy = -dy
+      }
+
+      x = x + dx
+      y = y + dy
+
+      this.draw()
     }
   }
 
@@ -48,16 +40,40 @@ const Home = (props) => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
     const context = canvas.getContext('2d')
+    let animationFrameId
+    const array = []
+    for (let cant = 0; cant < 600; cant++) {
+      const radius = 3
+      const x = Math.random() * (innerWidth - radius * 2) + radius
+      const y = Math.random() * (innerHeight - radius * 2) + radius
 
-    // Our draw come here
-    draw(context)
-  }, [draw])
+      const dx = Math.random() - 0.5
+      const dy = Math.random() - 0.5
+
+      array.push(new Circle(x, y, dx, dy, radius, context))
+    }
+
+    const render = () => {
+      context.clearRect(0, 0, innerWidth, innerHeight)
+      animationFrameId = window.requestAnimationFrame(render)
+      for (let i = 0; i < array.length; i++) {
+        array[i].update()
+      }
+    }
+
+    render(animationFrameId)
+
+    return () => window.cancelAnimationFrame(animationFrameId)
+  }, [])
 
   return (
     <canvas
       ref={canvasRef}
       {...props}
+
       style={{
+        width: '100%',
+        height: '100%'
       }}
     />
   )
