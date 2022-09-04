@@ -1,25 +1,28 @@
 import { useRef, useEffect } from 'react'
 
-const useCanvas = (draw, options = {}) => {
+const useCanvas = (createEntities, animation, width, height) => {
   const canvasRef = useRef(null)
-
   useEffect(() => {
     const canvas = canvasRef.current
-    const context = canvas.getContext(options.context || '2d')
-    let frameCount = 0
+    const context = canvas.getContext('2d')
+    canvas.width = width
+    canvas.height = height
     let animationFrameId
+    const entities = []
+    createEntities(context, entities)
 
     const render = () => {
-      frameCount++
-      draw(context, frameCount)
+      context.clearRect(0, 0, innerWidth, innerHeight)
+      animation(entities)
       animationFrameId = window.requestAnimationFrame(render)
     }
 
     render()
+
     return () => {
       window.cancelAnimationFrame(animationFrameId)
     }
-  }, [draw, options.context])
+  }, [width, height])
   return canvasRef
 }
 export default useCanvas
