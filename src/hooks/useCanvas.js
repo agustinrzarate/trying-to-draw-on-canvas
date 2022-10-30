@@ -12,9 +12,9 @@ const useCanvas = (createEntities, animation, width, height) => {
     createEntities(context, entities)
 
     const render = () => {
+      animationFrameId = window.requestAnimationFrame(render)
       context.clearRect(0, 0, innerWidth, innerHeight)
       animation(entities)
-      animationFrameId = window.requestAnimationFrame(render)
     }
 
     render()
